@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>{{ p.name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+  .overflow-x-auto {
+    scroll-behavior: smooth;
+  }
+</style>
+
+<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
+
+  <div class="max-w-7xl mx-auto p-10">
+
+    <!-- PRODUCT -->
+    <div class="grid md:grid-cols-2 gap-10 items-start">
+      <!-- PRODUCT IMAGE -->
+      <img src="/static/images/{{ p.image }}" class="w-full aspect-[4/3] rounded-3xl shadow-2xl object-cover">
+
+
+      <!-- PRODUCT DETAILS -->
+      <div>
+        <h1 class="text-4xl font-bold">{{ p.name }}</h1>
+        <p class="text-yellow-400 mt-2 text-lg">⭐ {{ p.rating }}</p>
+        <p class="mt-4 text-slate-300">{{ p.description }}</p>
+        <p class="text-4xl font-bold mt-6">₹ {{ p.price }}</p>
+
+        <!-- QUANTITY -->
+        <div class="flex items-center mt-6">
+          <button onclick="qty.value=Math.max(1,qty.value-1)" class="px-4 py-2 bg-slate-700 rounded-l">-</button>
+          <input id="qty" value="1" class="w-14 text-center text-black">
+          <button onclick="qty.value++" class="px-4 py-2 bg-slate-700 rounded-r">+</button>
+        </div>
+
+        <!-- ADD TO CART -->
+        <button onclick="addCart()" class="bg-cyan-500 px-8 py-3 rounded-full mt-6 hover:scale-105 transition">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+
+
+    <!-- SMART RECOMMENDATIONS -->
+    <!-- SMART RECOMMENDATIONS -->
+    <h2 class="text-2xl font-bold mt-20 mb-4 px-10">You May Also Like</h2>
+
+    <div class="relative px-10">
+      <!-- LEFT ARROW -->
+      <!-- <button onclick="scrollLeft()"
+        class="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 text-white p-2 rounded-full z-10">
+        ◀
+      </button> -->
+
+      <!-- RIGHT ARROW -->
+      <button onclick="scrollRight()"
+        class="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800/60 hover:bg-gray-700 text-white p-2 rounded-full z-10">
+        ▶
+      </button>
+
+      <!-- SCROLLABLE CONTAINER -->
+      <div id="carousel" class="flex gap-6 overflow-x-auto scrollbar-hide py-4 scroll-smooth">
+        {% for r in related[:10] %}
+        <a href="/product/{{r.id}}"
+          class="min-w-[200px] bg-gray-800 p-4 rounded-xl text-center hover:scale-105 transition flex-shrink-0">
+          <img src="/static/images/{{r.image}}" class="h-32 w-full mx-auto rounded-xl object-cover">
+          <p class="mt-2 truncate">{{r.name}}</p>
+          <p class="text-cyan-400 font-bold">₹{{r.price}}</p>
+        </a>
+        {% endfor %}
+      </div>
+      <!-- <h2 class="text-2xl font-bold mt-16 mb-4">Recommended Fish for this Accessory</h2>
+      <div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
+        {% for f in fish_reco %}
+        <a href="/accessory/{{f.id}}" class="min-w-[220px] bg-slate-800 p-4 rounded-xl hover:scale-105 transition">
+          <img src="/static/images/{{f.image}}" class="h-32 w-full rounded-xl object-cover">
+          <p class="mt-2 truncate">{{ f.name }}</p>
+          <p class="text-cyan-400 font-bold">₹{{ f.price }}</p>
+          <p class="text-xs text-slate-400">{{ f.category }}</p>
+        </a>
+        {% endfor %}
+      </div>
+    </div> -->
+
+    <script>
+      const carousel = document.getElementById('carousel');
+
+      // dynamically calculate card width including gap
+      const card = carousel.querySelector('a');
+      const gap = parseInt(getComputedStyle(carousel).gap) || 16; // default 16px gap
+      const cardWidth = card.offsetWidth + gap;
+
+      function scrollLeft() {
+        carousel.scrollBy({
+          left: -cardWidth,
+          behavior: 'smooth'
+        });
+      }
+
+      function scrollRight() {
+        carousel.scrollBy({
+          left: cardWidth,
+          behavior: 'smooth'
+        });
+      }
+    </script>
+
+    <style>
+      /* Optional: hide default scrollbar */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+
+
+
+
+    <!-- REVIEWS -->
+    <h2 class="text-2xl mt-20 mb-4 font-bold">Customer Reviews</h2>
+
+    <form action="/add-review" method="POST" enctype="multipart/form-data"
+      class="bg-slate-800/60 backdrop-blur p-6 rounded-2xl grid md:grid-cols-2 gap-4">
+
+      <input type="hidden" name="product_id" value="{{ p.id }}">
+
+      <input name="name" placeholder="Your Name" required class="p-3 rounded bg-slate-900">
+      <select name="rating" required class="p-3 rounded bg-slate-900">
+        <option value="">Rating</option>
+        <option value="5">★★★★★ Excellent</option>
+        <option value="4">★★★★ Very Good</option>
+        <option value="3">★★★ Good</option>
+        <option value="2">★★ Fair</option>
+        <option value="1">★ Poor</option>
+      </select>
+
+      <textarea name="comment" placeholder="Write your review" required
+        class="p-3 rounded bg-slate-900 md:col-span-2"></textarea>
+      <input type="file" name="images" multiple class="md:col-span-2">
+      <input type="file" name="video" class="md:col-span-2">
+
+      <button class="bg-cyan-500 py-3 rounded-full md:col-span-2 hover:scale-105 transition">Submit Review</button>
+    </form>
+
+    <!-- REVIEW LIST -->
+    <div class="grid md:grid-cols-2 gap-6 mt-10">
+      {% for r in reviews %}
+      <div class="bg-slate-800/60 backdrop-blur p-6 rounded-3xl shadow-xl">
+
+        <div class="flex justify-between items-center">
+          <b>{{ r.name }}</b>
+          <span class="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm">⭐ {{ r.rating }}</span>
+        </div>
+
+        <p class="mt-2 text-slate-300">{{ r.comment }}</p>
+
+        {% if r.images %}
+        <div class="grid grid-cols-3 gap-2 mt-3">
+          {% for img in r.images.split(',') %}
+          <img src="{{ url_for('static', filename='reviews/' + img) }}" class="rounded-xl h-24 object-cover">
+
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if r.video %}
+        <video controls class="w-full mt-3 rounded-xl">
+          <source src="{{ url_for('static', filename='review_videos/' + r.video) }}">
+
+        </video>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <script>
+    function addCart() {
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      let qty = parseInt(document.getElementById("qty").value);
+      let ex = cart.find(i => i.id === {{ p.id }});
+    if (ex) ex.qty += qty;
+    else cart.push({ id: {{ p.id }}, name: "{{p.name}}", price: {{ p.price }}, qty: qty, image: "{{p.image}}"});
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("Added to cart!");
+    }
+  </script>
+
+</body>
+
+</html>

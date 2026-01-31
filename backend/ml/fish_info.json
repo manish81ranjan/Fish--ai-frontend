@@ -1,0 +1,61 @@
+{
+  "Goldfish": {
+    "disease": "Ich (White Spot Disease)",
+    "medicine": "Malachite Green / Ich-X",
+    "care": "Raise water temperature to 28°C, add aquarium salt, and perform partial water change"
+  },
+
+  "Guppy": {
+    "disease": "Fin Rot",
+    "medicine": "Methylene Blue",
+    "care": "Remove infected fish, keep tank clean, and improve filtration"
+  },
+
+  "Betta": {
+    "disease": "Fungal Infection",
+    "medicine": "API Fungus Cure",
+    "care": "Isolate fish, avoid overfeeding, and maintain warm clean water"
+  },
+
+  "Angelfish": {
+    "disease": "Hole in the Head Disease",
+    "medicine": "Metronidazole",
+    "care": "Improve water quality, provide vitamin-rich food"
+  },
+
+  "Molly": {
+    "disease": "Velvet Disease",
+    "medicine": "Copper Sulfate",
+    "care": "Dim aquarium lights and increase water temperature slightly"
+  },
+
+  "Platy": {
+    "disease": "Tail Rot",
+    "medicine": "Erythromycin",
+    "care": "Remove waste, increase water changes, and isolate fish"
+  },
+
+  "Neon Tetra": {
+    "disease": "Neon Tetra Disease",
+    "medicine": "No reliable cure",
+    "care": "Immediately isolate infected fish and disinfect tank"
+  },
+
+  "Oscar": {
+    "disease": "Pop Eye",
+    "medicine": "Kanamycin",
+    "care": "Improve filtration and maintain stable water parameters"
+  },
+
+  "Discus": {
+    "disease": "Gill Flukes",
+    "medicine": "Praziquantel",
+    "care": "Perform large water changes and keep temperature stable"
+  },
+
+  "Flowerhorn": {
+    "disease": "Swim Bladder Disorder",
+    "medicine": "Epsom Salt Bath",
+    "care": "Avoid overfeeding and provide high-quality pellets"
+  }
+}

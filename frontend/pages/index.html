@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Fish AI Market</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(15px);
+    }
+
+    .glow {
+      box-shadow: 0 0 40px rgba(0, 180, 255, .5);
+    }
+
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-18px);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-white overflow-x-hidden">
+
+  <!-- NAVBAR -->
+  <nav class="fixed w-full z-50 bg-black/50 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+      <!-- Logo -->
+      <h1 class="text-xl font-bold text-cyan-400">🐟 Fish AI Market</h1>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex gap-6 items-center text-sm">
+        <a href="/" class="hover:text-cyan-400 transition">Home</a>
+        <a href="/marketplace" class="hover:text-cyan-400 transition">Marketplace</a>
+        <a href="/ai-fish" class="hover:text-cyan-400 transition">AI Detector</a>
+        <a href="/accessories" class="hover:text-cyan-400 transition">Accessories</a>
+        <a href="/cart" class="hover:text-cyan-400 transition">Cart</a>
+        <a href="/orders" class="hover:text-cyan-400 transition">Orders</a>
+
+        <!-- User Dropdown -->
+        <div class="relative group">
+          <button class="px-3 py-2 rounded-md hover:bg-slate-800 transition">
+            <i class="fa-solid fa-user text-cyan-400"></i>
+          </button>
+
+          <div
+            class="absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none group-hover:pointer-events-auto">
+
+            {% if session.user_id %}
+            <a href="/auth" class="block px-4 py-2 hover:bg-slate-800 transition">My Account</a>
+            <a href="/logout" class="block px-4 py-2 hover:bg-slate-800 text-red-400 transition">Logout</a>
+            {% else %}
+            <a href="/profile" class="block px-4 py-2 hover:bg-slate-800 transition">Login / Sign Up</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden flex items-center">
+        <button id="mobileMenuBtn" class="text-cyan-400 focus:outline-none">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-black/80 backdrop-blur border-t border-slate-800">
+      <a href="/" class="block px-6 py-3 hover:bg-slate-800 transition">Home</a>
+      <a href="/marketplace" class="block px-6 py-3 hover:bg-slate-800 transition">Marketplace</a>
+      <a href="/ai-fish" class="block px-6 py-3 hover:bg-slate-800 transition">AI Detector</a>
+      <a href="/accessories" class="block px-6 py-3 hover:bg-slate-800 transition">Accessories</a>
+      <a href="/cart" class="block px-6 py-3 hover:bg-slate-800 transition">Cart</a>
+      <a href="/orders" class="block px-6 py-3 hover:bg-slate-800 transition">Orders</a>
+      {% if session.user_id %}
+      <a href="/auth" class="block px-6 py-3 hover:bg-slate-800 transition">My Account</a>
+      <a href="/logout" class="block px-6 py-3 hover:bg-slate-800 text-red-400 transition">Logout</a>
+      {% else %}
+      <a href="/profile" class="block px-6 py-3 hover:bg-slate-800 transition">Login / Sign Up</a>
+      {% endif %}
+    </div>
+
+  </nav>
+
+
+  <!-- HERO -->
+  <section class="h-screen flex items-center justify-center relative">
+    <div id="three-container" class="absolute inset-0"></div>
+
+    <div class="relative z-10 text-center px-6">
+      <h1 class="text-5xl md:text-7xl font-bold text-cyan-400 drop-shadow-lg">Smart Fish Marketplace</h1>
+      <p class="mt-4 text-gray-300 max-w-xl mx-auto">
+        Buy premium fish with AI quality verification & disease detection.
+      </p>
+      <div class="mt-8 flex justify-center gap-4">
+        <a href="/marketplace" class="px-6 py-3 rounded-full bg-cyan-500 hover:bg-cyan-400 glow">Explore Market</a>
+        <a href="/ai-fish" class="px-6 py-3 rounded-full border border-cyan-500 hover:bg-cyan-500/20">Use AI
+          Detector</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="py-24 bg-slate-900">
+    <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 px-6">
+      <div class="glass p-6 rounded-xl text-center floating">
+        <i class="fa-solid fa-brain text-4xl text-cyan-400 mb-3"></i>
+        <h3 class="font-semibold text-lg">AI Quality Check</h3>
+        <p class="text-sm text-gray-400 mt-2">Scan fish images to detect disease & freshness.</p>
+      </div>
+      <div class="glass p-6 rounded-xl text-center floating">
+        <i class="fa-solid fa-truck text-4xl text-cyan-400 mb-3"></i>
+        <h3 class="font-semibold text-lg">Fast Delivery</h3>
+        <p class="text-sm text-gray-400 mt-2">Doorstep fresh fish delivery.</p>
+      </div>
+      <div class="glass p-6 rounded-xl text-center floating">
+        <i class="fa-solid fa-lock text-4xl text-cyan-400 mb-3"></i>
+        <h3 class="font-semibold text-lg">Secure Payments</h3>
+        <p class="text-sm text-gray-400 mt-2">Protected checkout system.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKET PREVIEW -->
+  <section class="py-24">
+    <h2 class="text-center text-4xl font-bold text-cyan-400 mb-10">Trending Fish</h2>
+
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-6" id="fishGrid"></div>
+  </section>
+
+
+  <!-- CTA -->
+  <section class="py-24 bg-gradient-to-r from-cyan-500 to-blue-600 text-center">
+    <h2 class="text-4xl font-bold">Verify Fish with AI Today</h2>
+    <p class="mt-3">Upload fish image and get instant disease & freshness report.</p>
+    <a href="/ai-fish" class="inline-block mt-6 px-8 py-3 bg-black rounded-full hover:bg-slate-900">Start AI Scan</a>
+  </section>
+
+  <!-- FOOTER -->
+  <!-- FOOTER -->
+  <footer class="relative bg-slate-900 text-gray-300 pt-24 pb-10 overflow-hidden">
+    <!-- Three.js floating fish canvas -->
+    <div id="footerThree" class="absolute inset-0 -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
+      <!-- About -->
+      <div>
+        <h3 class="text-cyan-400 text-xl font-bold mb-4">Fish AI Market</h3>
+        <p class="text-sm text-gray-400">Premium aquarium fish delivered fresh with AI quality check and disease
+          detection. Your trusted online aquarium marketplace.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Quick Links</h4>
+        <ul class="space-y-2 text-gray-300 text-sm">
+          <li><a href="/" class="hover:text-cyan-400 transition">Home</a></li>
+          <li><a href="/marketplace" class="hover:text-cyan-400 transition">Marketplace</a></li>
+          <li><a href="/ai-fish" class="hover:text-cyan-400 transition">AI Detector</a></li>
+          <li><a href="/accessories" class="hover:text-cyan-400 transition">Accessories</a></li>
+          <li><a href="/cart" class="hover:text-cyan-400 transition">Cart</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Contact Us</h4>
+        <ul class="space-y-2 text-gray-300 text-sm">
+          <li>Email: support@fishaimarket.com</li>
+          <li>Phone: +91 98765 43210</li>
+          <li>Address: 123 Aqua Street, Ocean City</li>
+        </ul>
+      </div>
+
+      <!-- Social Media -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Follow Us</h4>
+        <div class="flex gap-4">
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-facebook-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-twitter-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-instagram-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-youtube-square"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 text-center text-gray-500 text-xs">
+      &copy; 2025 Fish AI Market. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- THREE.JS FOOTER ANIMATION -->
+  <script>
+    const footerContainer = document.getElementById('footerThree');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, footerContainer.clientWidth / 300, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setSize(footerContainer.clientWidth, 300);
+    footerContainer.appendChild(renderer.domElement);
+
+    camera.position.z = 20;
+
+    // Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0x00ffff, 1);
+    pointLight.position.set(10, 10, 10);
+    scene.add(pointLight);
+
+    // Footer fish textures
+    const loader = new THREE.TextureLoader();
+    const footerFishImages = [
+      "/static/images/image1.jpg",   // Fish 1
+      "https://i.imgur.com/D8z7Dhe.jpg" // Fish 2
+    ];
+
+    const footerFishes = []; // renamed variable
+
+    footerFishImages.forEach((imgSrc, index) => {
+      loader.load(imgSrc, function (texture) {
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true
+        });
+        const geometry = new THREE.PlaneGeometry(2, 2); // size of fish
+        const fish = new THREE.Mesh(geometry, material);
+
+        // random initial position
+        fish.position.x = (Math.random() - 0.5) * 20;
+        fish.position.y = (Math.random() - 0.5) * 5;
+        fish.position.z = (Math.random() - 0.5) * 10;
+
+        scene.add(fish);
+        footerFishes.push(fish);
+      });
+    });
+
+    function animateFooter() {
+      requestAnimationFrame(animateFooter);
+      footerFishes.forEach((fish, i) => {
+        fish.position.y += Math.sin(Date.now() * 0.001 + i) * 0.01;
+        fish.position.x += Math.cos(Date.now() * 0.001 + i) * 0.01;
+        fish.rotation.z = Math.sin(Date.now() * 0.001 + i) * 0.1;
+      });
+      renderer.render(scene, camera);
+    }
+
+    animateFooter();
+
+    // Responsive
+    window.addEventListener('resize', () => {
+      camera.aspect = footerContainer.clientWidth / 300;
+      camera.updateProjectionMatrix();
+      renderer.setSize(footerContainer.clientWidth, 300);
+    });
+  </script>
+
+
+  <script src="{{ url_for('static', filename='js/threeScene.js') }}"></script>
+  <script>
+
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  </script>
+  <script>
+    const fishes = [
+      { id: 1, name: "Blue Betta Fish", price: 320, img: "/static/images/image1.jpg" },
+      { id: 2, name: "Golden Molly", price: 180, img: "https://i.imgur.com/D8z7Dhe.jpg" },
+      { id: 3, name: "Neon Tetra", price: 150, img: "https://i.imgur.com/CM0uAqY.jpg" },
+      { id: 4, name: "Guppy Pair", price: 220, img: "https://i.imgur.com/PH95Rnb.jpg" },
+      { id: 5, name: "Koi Carp (Mini)", price: 650, img: "https://i.imgur.com/WU8XTVc.jpg" },
+      { id: 6, name: "Angelfish", price: 450, img: "https://i.imgur.com/Ju3UMXJ.jpg" },
+      { id: 7, name: "Discus Fish", price: 1200, img: "https://i.imgur.com/5Wb4F7B.jpg" },
+      { id: 8, name: "Oscar Fish", price: 520, img: "https://i.imgur.com/0q7I1Ws.jpg" },
+      { id: 9, name: "Cherry Shrimp", price: 280, img: "https://i.imgur.com/vxlUoN7.jpg" },
+      { id: 10, name: "Freshwater Crab", price: 390, img: "https://i.imgur.com/Lpr9YzI.jpg" },
+      { id: 11, name: "Blue Lobster", price: 1500, img: "https://i.imgur.com/7dJ6ToP.jpg" },
+      { id: 12, name: "Flowerhorn Cichlid", price: 850, img: "https://i.imgur.com/SD4pS2F.jpg" },
+      { id: 13, name: "Swordtail Fish", price: 260, img: "https://i.imgur.com/t3YZ9E4.jpg" },
+      { id: 14, name: "Tiger Barb", price: 190, img: "https://i.imgur.com/q3BC2bQ.jpg" },
+      { id: 15, name: "Clown Loach", price: 400, img: "https://i.imgur.com/3Bkmq2C.jpg" },
+      { id: 16, name: "Albino Pleco", price: 520, img: "https://i.imgur.com/4ae4A9G.jpg" },
+      { id: 17, name: "Rainbow Shark", price: 480, img: "https://i.imgur.com/xr7gR9m.jpg" },
+      { id: 18, name: "Red Tail Shark", price: 550, img: "https://i.imgur.com/FQL4k27.jpg" },
+      { id: 19, name: "Arowana (Baby)", price: 1800, img: "https://i.imgur.com/yCh6n0R.jpg" },
+      { id: 20, name: "Glass Catfish", price: 420, img: "https://i.imgur.com/Yh7XgmJ.jpg" }
+    ];
+
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    function renderFish() {
+      const grid = document.getElementById("fishGrid");
+      fishes.forEach(f => {
+        grid.innerHTML += `
+   <div class="glass p-4 rounded-xl hover:scale-105 transition">
+     <img src="${f.img}" class="rounded-lg h-44 w-full object-cover">
+     <h3 class="mt-2 font-semibold">${f.name}</h3>
+     <p class="text-cyan-400 font-bold">₹${f.price}</p>
+     <button onclick="addToCart(${f.id})"
+       class="mt-3 w-full py-2 bg-cyan-500 rounded hover:bg-cyan-400">
+       Add to Cart
+     </button>
+   </div>`;
+      });
+    }
+
+    function addToCart(id) {
+      const fish = fishes.find(f => f.id === id);
+      const existing = cart.find(i => i.id === id);
+
+      if (existing) existing.qty++;
+      else cart.push({ ...fish, qty: 1 });
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert("Added to Cart!");
+    }
+
+    renderFish();
+  </script>
+  <script src="/static/js/threeScene.js"></script>
+
+</body>
+
+</html>

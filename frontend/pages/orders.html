@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 My Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f1a;
+      color: #ffffff;
+    }
+
+    a { transition: color 0.2s; }
+    a:hover { color: #00d4ff; }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #00d4ff, #00a1ff);
+      color: white;
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+
+    .order-card {
+      background-color: #1f2937;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .order-card:hover { transform: scale(1.02); }
+
+    .status-pending { color: #facc15; }
+    .status-completed { color: #22c55e; }
+    .status-cancelled { color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="bg-blue-600 p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">📦 My Orders</h1>
+    <a href="/marketplace" class="btn-primary px-4 py-2 rounded-lg font-medium">Shop More</a>
+  </nav>
+
+  <!-- Orders Section -->
+  <section class="max-w-7xl mx-auto p-6">
+    <div id="ordersList" class="space-y-4"></div>
+  </section>
+
+  <script>
+    const ordersList = document.getElementById('ordersList');
+
+    function renderOrders() {
+      // Get fresh orders from localStorage
+      let orders = JSON.parse(localStorage.getItem('orders')) || [];
+
+      ordersList.innerHTML = '';
+
+      if (orders.length === 0) {
+        ordersList.innerHTML = '<p class="text-center text-gray-400">You have no orders yet.</p>';
+        return;
+      }
+
+      orders.forEach(order => {
+        // Use stored total if available
+        let total = order.total || order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        const orderDiv = document.createElement('div');
+        orderDiv.className = 'order-card';
+
+        orderDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-lg font-bold">Order #${order.id}</h2>
+            <span class="font-semibold ${
+              order.status === 'pending' ? 'status-pending' :
+              order.status === 'completed' ? 'status-completed' :
+              'status-cancelled'
+            }">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+          </div>
+          <p class="text-gray-300 text-sm mb-2">Date: ${order.date}</p>
+          <ul class="mb-2">
+            ${order.items.map(item => `<li>${item.quantity} × ${item.name} - ₹${(item.price*item.quantity).toFixed(2)}</li>`).join('')}
+          </ul>
+          <p class="font-semibold text-cyan-400">Total: ₹${total.toFixed(2)}</p>
+        `;
+
+        ordersList.appendChild(orderDiv);
+      });
+    }
+
+    renderOrders();
+  </script>
+
+</body>
+</html>

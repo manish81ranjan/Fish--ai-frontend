@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ a.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white">
+
+    <div class="max-w-7xl mx-auto p-10">
+
+        <!-- ACCESSORY -->
+        <div class="grid md:grid-cols-2 gap-10 items-start">
+            <img src="/static/images/{{ a.image }}" class="w-full aspect-[4/3] rounded-3xl shadow-2xl object-cover">
+
+            <div>
+                <h1 class="text-4xl font-bold">{{ a.name }}</h1>
+                <p class="text-yellow-400 mt-2">⭐ {{ a.rating }}</p>
+                <p class="mt-4 text-slate-300">{{ a.description }}</p>
+                <p class="text-4xl font-bold mt-6">₹ {{ a.price }}</p>
+
+                <div class="flex items-center mt-6">
+                    <button onclick="qty.value=Math.max(1,qty.value-1)"
+                        class="px-4 py-2 bg-slate-700 rounded-l">-</button>
+                    <input id="qty" value="1" class="w-14 text-center text-black">
+                    <button onclick="qty.value++" class="px-4 py-2 bg-slate-700 rounded-r">+</button>
+                </div>
+
+                <button onclick="addCart()"
+                    class="bg-cyan-500 px-8 py-3 rounded-full mt-6 hover:scale-105 transition">Add to Cart</button>
+            </div>
+        </div>
+
+        <!-- RELATED ACCESSORIES -->
+        <h2 class="text-2xl font-bold mt-16 mb-4">You May Also Like</h2>
+        <div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
+            {% for r in related %}
+            <a href="/accessory/{{r.id}}" class="min-w-[220px] bg-slate-800 p-4 rounded-xl hover:scale-105 transition">
+                <img src="/static/images/{{ r.image }}" class="h-32 w-full rounded-xl object-cover">
+                <p class="mt-2 truncate">{{ r.name }}</p>
+                <p class="text-cyan-400 font-bold">₹{{ r.price }}</p>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- FISH RECOMMENDATIONS -->
+        <h2 class="text-2xl font-bold mt-16 mb-4">Recommended Fish for this Accessory</h2>
+        <div class="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
+            {% for f in fish_reco %}
+            <a href="/product/{{f.id}}" class="min-w-[220px] bg-slate-800 p-4 rounded-xl hover:scale-105 transition">
+                <img src="/static/images/{{f.image}}" class="h-32 w-full rounded-xl object-cover">
+                <p class="mt-2 truncate">{{ f.name }}</p>
+                <p class="text-cyan-400 font-bold">₹{{ f.price }}</p>
+                <p class="text-xs text-slate-400">{{ f.category }}</p>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- REVIEWS -->
+        <h2 class="text-2xl mt-20 mb-4 font-bold">Customer Reviews</h2>
+
+        <form action="/api/accessories/add-review" method="POST" enctype="multipart/form-data"
+            class="bg-slate-800/60 p-6 rounded-2xl grid md:grid-cols-2 gap-4">
+            <input type="hidden" name="product_id" value="{{ a.id }}">
+            <input name="name" placeholder="Your Name" required class="p-3 rounded bg-slate-900">
+            <select name="rating" required class="p-3 rounded bg-slate-900">
+                <option value="">Rating</option>
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★</option>
+                <option value="3">★★★</option>
+                <option value="2">★★</option>
+                <option value="1">★</option>
+            </select>
+            <textarea name="comment" placeholder="Write your review" required
+                class="p-3 rounded bg-slate-900 md:col-span-2"></textarea>
+            <input type="file" name="images" multiple class="md:col-span-2">
+            <input type="file" name="video" class="md:col-span-2">
+            <button class="bg-cyan-500 py-3 rounded-full md:col-span-2 hover:scale-105 transition">Submit
+                Review</button>
+        </form>
+
+        <!-- REVIEW LIST -->
+        <div class="grid md:grid-cols-2 gap-6 mt-10">
+            {% for r in reviews %}
+            <div class="bg-slate-800/60 p-6 rounded-3xl">
+                <div class="flex justify-between">
+                    <b>{{ r.name }}</b>
+                    <span class="bg-yellow-400 text-black px-3 py-1 rounded-full">⭐ {{ r.rating }}</span>
+                </div>
+                <p class="mt-2 text-slate-300">{{ r.comment }}</p>
+
+                {% if r.images %}
+                <div class="grid grid-cols-3 gap-2 mt-3">
+                    {% for img in r.images.split(',') %}
+                    <img src="{{ url_for('static', filename='reviews/' + img) }}" class="rounded-xl h-24 object-cover">
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if r.video %}
+                <video controls class="w-full mt-3 rounded-xl">
+                    <source src="{{ url_for('static', filename='review_videos/' + r.video) }}">
+                </video>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <script>
+        function addCart() {
+            let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            let qty = parseInt(document.getElementById("qty").value);
+            let ex = cart.find(i => i.id === {{ a.id }});
+        if (ex) ex.qty += qty;
+        else cart.push({ id: {{ a.id }}, name: "{{ a.name }}", price: {{ a.price }}, qty: qty, image: "{{ a.image }}" });
+        localStorage.setItem("cart", JSON.stringify(cart));
+        alert("Accessory added to cart!");
+}
+    </script>
+
+    <style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none
+        }
+
+        .scrollbar-hide {
+            scrollbar-width: none
+        }
+    </style>
+
+</body>
+
+</html>

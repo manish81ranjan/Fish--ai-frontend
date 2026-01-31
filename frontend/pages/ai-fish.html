@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐟 AI Fish Detector</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0f1a;
+      color: #ffffff;
+    }
+
+    a {
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: #00d4ff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #00d4ff, #00a1ff);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+    }
+
+    .upload-area {
+      border: 2px dashed #00d4ff;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .upload-area:hover {
+      background-color: rgba(0, 212, 255, 0.1);
+    }
+
+    .preview img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="fixed top-0 left-0 w-full z-50 bg-black/50 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+      <!-- Logo -->
+      <h1 class="text-xl font-bold text-cyan-400">🐟 Fish AI Market</h1>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex gap-6 items-center text-sm">
+        <a href="/" class="hover:text-cyan-400 transition">Home</a>
+        <a href="/marketplace" class="hover:text-cyan-400 transition">Marketplace</a>
+        <a href="/ai-fish" class="hover:text-cyan-400 transition">AI Detector</a>
+        <a href="/accessories" class="hover:text-cyan-400 transition">Accessories</a>
+        <a href="/cart" class="hover:text-cyan-400 transition">Cart</a>
+        <a href="/orders" class="hover:text-cyan-400 transition">Orders</a>
+
+        <!-- User Dropdown -->
+        <div class="relative group">
+          <button class="px-3 py-2 rounded-md hover:bg-slate-800 transition">
+            <i class="fa-solid fa-user text-cyan-400"></i>
+          </button>
+          <div
+            class="absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-700 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none group-hover:pointer-events-auto">
+            {% if session.user_id %}
+            <a href="/auth" class="block px-4 py-2 hover:bg-slate-800 transition">My Account</a>
+            <a href="/logout" class="block px-4 py-2 hover:bg-slate-800 text-red-400 transition">Logout</a>
+            {% else %}
+            <a href="/profile" class="block px-4 py-2 hover:bg-slate-800 transition">Login / Sign Up</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden flex items-center">
+        <button id="mobileMenuBtn" class="text-cyan-400 focus:outline-none">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-black/80 backdrop-blur border-t border-slate-800">
+      <a href="/" class="block px-6 py-3 hover:bg-slate-800 transition">Home</a>
+      <a href="/marketplace" class="block px-6 py-3 hover:bg-slate-800 transition">Marketplace</a>
+      <a href="/ai-fish" class="block px-6 py-3 hover:bg-slate-800 transition">AI Detector</a>
+      <a href="/accessories" class="block px-6 py-3 hover:bg-slate-800 transition">Accessories</a>
+      <a href="/cart" class="block px-6 py-3 hover:bg-slate-800 transition">Cart</a>
+      <a href="/orders" class="block px-6 py-3 hover:bg-slate-800 transition">Orders</a>
+      {% if session.user_id %}
+      <a href="/auth" class="block px-6 py-3 hover:bg-slate-800 transition">My Account</a>
+      <a href="/logout" class="block px-6 py-3 hover:bg-slate-800 text-red-400 transition">Logout</a>
+      {% else %}
+      <a href="/profile" class="block px-6 py-3 hover:bg-slate-800 transition">Login / Sign Up</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Add top margin to avoid navbar overlap -->
+  <header class="bg-gradient-to-r from-blue-800 to-cyan-600 py-6 text-center text-white mt-20">
+    <h1 class="text-4xl font-bold">AI Fish Detector</h1>
+    <p class="mt-2 text-lg">Upload an image of a fish and let our AI detect its species</p>
+  </header>
+
+
+  <!-- Upload Section -->
+  <section class="max-w-3xl mx-auto p-8">
+    <div id="uploadArea" class="upload-area">
+      <p class="text-cyan-400 text-lg">Click or drag & drop your fish image here</p>
+      <input type="file" id="fileInput" accept="image/*" class="hidden">
+    </div>
+
+    <!-- Preview Image -->
+    <div class="preview mt-4 text-center" id="preview"></div>
+
+    <!-- Detect Button -->
+    <div class="text-center mt-6">
+      <button id="detectBtn" class="btn-primary px-6 py-3 rounded-lg text-lg font-medium" disabled>
+        Detect Fish
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div class="mt-6 text-center" id="result"></div>
+  </section>
+  <!-- FOOTER -->
+  <footer class="relative bg-slate-900 text-gray-300 pt-24 pb-10 overflow-hidden">
+    <!-- Three.js floating fish canvas -->
+    <div id="footerThree" class="absolute inset-0 -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10">
+      <!-- About -->
+      <div>
+        <h3 class="text-cyan-400 text-xl font-bold mb-4">Fish AI Market</h3>
+        <p class="text-sm text-gray-400">Premium aquarium fish delivered fresh with AI quality check and disease
+          detection. Your trusted online aquarium marketplace.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Quick Links</h4>
+        <ul class="space-y-2 text-gray-300 text-sm">
+          <li><a href="/" class="hover:text-cyan-400 transition">Home</a></li>
+          <li><a href="/marketplace" class="hover:text-cyan-400 transition">Marketplace</a></li>
+          <li><a href="/ai-fish" class="hover:text-cyan-400 transition">AI Detector</a></li>
+          <li><a href="/accessories" class="hover:text-cyan-400 transition">Accessories</a></li>
+          <li><a href="/cart" class="hover:text-cyan-400 transition">Cart</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Contact Us</h4>
+        <ul class="space-y-2 text-gray-300 text-sm">
+          <li>Email: support@fishaimarket.com</li>
+          <li>Phone: +91 98765 43210</li>
+          <li>Address: 123 Aqua Street, Ocean City</li>
+        </ul>
+      </div>
+
+      <!-- Social Media -->
+      <div>
+        <h4 class="text-white font-semibold mb-3">Follow Us</h4>
+        <div class="flex gap-4">
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-facebook-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-twitter-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-instagram-square"></i></a>
+          <a href="#" class="text-cyan-400 hover:text-white transition text-2xl"><i
+              class="fab fa-youtube-square"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 text-center text-gray-500 text-xs">
+      &copy; 2025 Fish AI Market. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- THREE.JS FOOTER ANIMATION -->
+  <script>
+    const footerContainer = document.getElementById('footerThree');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, footerContainer.clientWidth / 300, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setSize(footerContainer.clientWidth, 300);
+    footerContainer.appendChild(renderer.domElement);
+
+    camera.position.z = 20;
+
+    // Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const pointLight = new THREE.PointLight(0x00ffff, 1);
+    pointLight.position.set(10, 10, 10);
+    scene.add(pointLight);
+
+    // Footer fish textures
+    const loader = new THREE.TextureLoader();
+    const footerFishImages = [
+      "/static/images/image1.jpg",   // Fish 1
+      "https://i.imgur.com/D8z7Dhe.jpg" // Fish 2
+    ];
+
+    const footerFishes = []; // renamed variable
+
+    footerFishImages.forEach((imgSrc, index) => {
+      loader.load(imgSrc, function (texture) {
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true
+        });
+        const geometry = new THREE.PlaneGeometry(2, 2); // size of fish
+        const fish = new THREE.Mesh(geometry, material);
+
+        // random initial position
+        fish.position.x = (Math.random() - 0.5) * 20;
+        fish.position.y = (Math.random() - 0.5) * 5;
+        fish.position.z = (Math.random() - 0.5) * 10;
+
+        scene.add(fish);
+        footerFishes.push(fish);
+      });
+    });
+
+    function animateFooter() {
+      requestAnimationFrame(animateFooter);
+      footerFishes.forEach((fish, i) => {
+        fish.position.y += Math.sin(Date.now() * 0.001 + i) * 0.01;
+        fish.position.x += Math.cos(Date.now() * 0.001 + i) * 0.01;
+        fish.rotation.z = Math.sin(Date.now() * 0.001 + i) * 0.1;
+      });
+      renderer.render(scene, camera);
+    }
+
+    animateFooter();
+
+    // Responsive
+    window.addEventListener('resize', () => {
+      camera.aspect = footerContainer.clientWidth / 300;
+      camera.updateProjectionMatrix();
+      renderer.setSize(footerContainer.clientWidth, 300);
+    });
+  </script>
+
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const detectBtn = document.getElementById('detectBtn');
+    const result = document.getElementById('result');
+
+    // Click upload area
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // Drag & Drop
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.style.backgroundColor = 'rgba(0,212,255,0.1)';
+    });
+    uploadArea.addEventListener('dragleave', e => {
+      e.preventDefault();
+      uploadArea.style.backgroundColor = '';
+    });
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      if (files.length) handleFile(files[0]);
+    });
+
+    // File selected
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file');
+        return;
+      }
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.innerHTML = `<img src="${reader.result}" alt="Fish Image">`;
+        detectBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Detect button click
+    detectBtn.addEventListener('click', () => {
+      result.innerHTML = `<p class="text-cyan-400 text-lg">Detecting fish... 🐠</p>`;
+
+      // TODO: Replace with AI backend call
+      setTimeout(() => {
+        result.innerHTML = `<p class="text-green-400 text-xl font-bold">Detected: Clownfish 🐟</p>`;
+      }, 2000);
+    });
+  </script>
+
+</body>
+
+</html>
