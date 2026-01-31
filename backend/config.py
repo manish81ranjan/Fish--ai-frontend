@@ -1,23 +1,28 @@
-# import os
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    SECRET_KEY = "super-secret-key"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, "database.db")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = "super-secret-key"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = "jwt-secret-key"
-    UPLOAD_FOLDER = "uploads/fish_images"
-    SECRET_KEY = "fish_secret"
-    # SQLALCHEMY_DATABASE_URI = "mysql://root:@localhost/fish_ai_market"
-    # SQLALCHEMY_DATABASE_URI = "mysql://root:Man@6jan@localhost:3306/fish_ai_market"
-    SECRET_KEY = "super-secret-key"
+    # =========================
+    # SECURITY
+    # =========================
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
-    SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://root:Man%406jan@localhost/fish_ai_market"
+    # =========================
+    # DATABASE (Railway MySQL)
+    # =========================
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+mysqldb://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}"
+        f"@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}"
+    )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    JWT_SECRET_KEY = "jwt-secret-key"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # =========================
+    # FILE UPLOADS
+    # =========================
+    UPLOAD_FOLDER = os.getenv(
+        "UPLOAD_FOLDER",
+        os.path.join(BASE_DIR, "uploads/fish_images")
+    )
