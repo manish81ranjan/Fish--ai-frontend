@@ -6,12 +6,14 @@ auth_bp = Blueprint("auth", __name__)
 mysql = MySQL()
 
 # ---------- MYSQL INIT ----------
-def init_auth(app):
-    app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'Man@6jan'
-    app.config['MYSQL_DB'] = 'fish_ai_market'
-    mysql.init_app(app)
+app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST")
+app.config["MYSQL_USER"] = os.getenv("MYSQL_USER")
+app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD")
+app.config["MYSQL_DB"] = os.getenv("MYSQL_DATABASE")
+app.config["MYSQL_PORT"] = int(os.getenv("MYSQL_PORT", 3306))
+app.config["MYSQL_CURSORCLASS"] = "DictCursor"
+
+mysql = MySQL(app)
 
 # ---------- ROUTES ----------
 @auth_bp.route("/")
@@ -83,3 +85,4 @@ def auth():
         return redirect("/profile")
 
     return render_template("auth.html", name=user[0], email=user[1])
+
