@@ -27,6 +27,8 @@ from backend.routes.accessories import api_accessories, accessories_site
 
 from backend.models.accessory import Accessory
 from backend.models.product import Product
+from flask import Flask
+from backend.routes.auth import auth_bp, init_auth
 
 
 
@@ -140,7 +142,11 @@ from backend.models.product import Product
 #         return render_template("accessories.html", accessories=accessories)
 
 #     return app
+app = Flask(__name__)
+app.secret_key = "super-secret-key"
 
+init_auth(app)
+app.register_blueprint(auth_bp)
 # ================== APP FACTORY ==================
 def create_app():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -274,3 +280,4 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
