@@ -121,3 +121,4 @@ def update_me():
     )
 
     return jsonify({"message": "Profile updated"}), 200
+
