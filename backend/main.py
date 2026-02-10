@@ -47,8 +47,10 @@ def create_app():
     CORS(app, supports_credentials=True)
 
     # ---------- MONGODB ----------
-    mongo = PyMongo(app)
-    app.mongo = mongo  # available as current_app.mongo
+    mongo = PyMongo()
+    mongo.init_app(app)
+    app.mongo = mongo
+ # available as current_app.mongo
 
     # ---------- EXTENSIONS ----------
     bcrypt.init_app(app)
@@ -148,3 +150,4 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
