@@ -43,20 +43,18 @@ def create_app():
     app.config.from_object(Config)
     app.secret_key = app.config["SECRET_KEY"]
 
+    if not app.config.get("MONGO_URI"):
+        raise RuntimeError("❌ MONGO_URI not set")
+
     # ---------- CORS ----------
     CORS(app, supports_credentials=True)
 
-    # ---------- MONGODB ----------
-    mongo = PyMongo()
-    mongo.init_app(app)
-    app.mongo = mongo
- # available as current_app.mongo
-
     # ---------- EXTENSIONS ----------
+    mongo.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    # ---------- REGISTER BLUEPRINTS ----------
+    # ---------- BLUEPRINTS ----------
     app.register_blueprint(auth_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(cart_bp)
@@ -65,12 +63,12 @@ def create_app():
     app.register_blueprint(api_accessories)
     app.register_blueprint(accessories_site)
 
-    # ---------- API HEALTH CHECK ----------
+    # ---------- HEALTH ----------
     @app.route("/api")
     def api_test():
         return jsonify({"message": "Backend running 🚀"})
 
-    # ---------- FRONTEND ROUTES ----------
+    # ---------- FRONTEND ----------
     @app.route("/")
     def home():
         return send_from_directory(FRONTEND_PAGES, "index.html")
@@ -89,59 +87,8 @@ def create_app():
             return jsonify({"error": "Invalid API route"}), 404
         return send_from_directory(FRONTEND_PAGES, page)
 
-    # ---------- SITE PAGES ----------
-    @app.route("/marketplace")
-    def marketplace():
-        products = list(app.mongo.db.products.find())
-        return render_template("marketplace.html", fishes=products)
-
-    @app.route("/ai-fish")
-    def ai_fish():
-        return render_template("ai-fish.html")
-
-    @app.route("/cart")
-    def cart():
-        return render_template("cart.html")
-
-    @app.route("/orders")
-    def orders():
-        return render_template("orders.html")
-
-    @app.route("/auth")
-    def auth():
-        if "user_id" in session:
-            return redirect("/profile")
-        return render_template("auth.html")
-
-    @app.route("/profile")
-    def profile():
-        return render_template("profile.html")
-
-    @app.route("/checkout")
-    def checkout():
-        return render_template("checkout.html")
-
-    @app.route("/product/<pid>")
-    def product_page(pid):
-        product = None
-
-        if ObjectId.is_valid(pid):
-            product = app.mongo.db.products.find_one({"_id": ObjectId(pid)})
-
-        if not product:
-            product = app.mongo.db.products.find_one({"id": int(pid)}) if pid.isdigit() else None
-
-        if not product:
-            return "Product not found", 404
-
-        return render_template("product.html", p=product)
-
-    @app.route("/accessories")
-    def accessories():
-        accessories = list(app.mongo.db.accessories.find())
-        return render_template("accessories.html", accessories=accessories)
-
     return app
+
 
 
 # ================== RENDER ENTRYPOINT ==================
@@ -150,4 +97,5 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
