@@ -15,7 +15,7 @@ class Cart:
         quantity=1,
         created_at=None
     ):
-        # store as ObjectId in DB
+        # Store IDs as ObjectId in DB
         self.user_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
         self.product_id = ObjectId(product_id) if isinstance(product_id, str) else product_id
         self.quantity = int(quantity)
