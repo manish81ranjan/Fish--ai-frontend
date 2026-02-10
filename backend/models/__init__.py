@@ -9,13 +9,25 @@
 # from .accessory_review import AccessoryReview
 from ..extensions import mongo
 
-# Example: collections
-users_collection = mongo.db.user
-products_collection = mongo.db.product
-carts_collection = mongo.db.cart
-orders_collection = mongo.db.order
-accessories_collection = mongo.db.accessory
-accessory_reviews_collection = mongo.db.accessory_review
+# Use functions to access collections AFTER Flask app is initialized
+def users_collection():
+    return mongo.db.user
+
+def products_collection():
+    return mongo.db.product
+
+def carts_collection():
+    return mongo.db.cart
+
+def orders_collection():
+    return mongo.db.order
+
+def accessories_collection():
+    return mongo.db.accessory
+
+def accessory_reviews_collection():
+    return mongo.db.accessory_review
+
 
 
 
