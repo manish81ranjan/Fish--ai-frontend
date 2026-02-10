@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 
 
 class Cart:
@@ -14,9 +15,10 @@ class Cart:
         quantity=1,
         created_at=None
     ):
-        self.user_id = user_id              # string (ObjectId)
-        self.product_id = product_id        # string (ObjectId)
-        self.quantity = quantity
+        # store as ObjectId in DB
+        self.user_id = ObjectId(user_id) if isinstance(user_id, str) else user_id
+        self.product_id = ObjectId(product_id) if isinstance(product_id, str) else product_id
+        self.quantity = int(quantity)
         self.created_at = created_at or datetime.utcnow()
 
     def to_dict(self):
@@ -37,8 +39,8 @@ class Cart:
         """
         return {
             "id": str(cart["_id"]),
-            "user_id": cart.get("user_id"),
-            "product_id": cart.get("product_id"),
-            "quantity": cart.get("quantity"),
-            "created_at": cart.get("created_at")
+            "user_id": str(cart["user_id"]),
+            "product_id": str(cart["product_id"]),
+            "quantity": cart["quantity"],
+            "created_at": cart["created_at"]
         }
