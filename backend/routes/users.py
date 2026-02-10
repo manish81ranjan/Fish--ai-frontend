@@ -1,15 +1,23 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity
+)
 from bson import ObjectId
 
-from extensions import mongo
+from backend.extensions import mongo  # ✅ FIXED IMPORT
 
 
 # =========================
 # BLUEPRINT
 # =========================
-users_bp = Blueprint("users", __name__, url_prefix="/api/users")
+users_bp = Blueprint(
+    "users",
+    __name__,
+    url_prefix="/api/users"
+)
 
 
 # =========================
@@ -74,7 +82,11 @@ def login():
 def get_me():
     user_id = get_jwt_identity()
 
-    user = mongo.db.users.find_one({"_id": ObjectId(user_id)}, {"password": 0})
+    user = mongo.db.users.find_one(
+        {"_id": ObjectId(user_id)},
+        {"password": 0}
+    )
+
     if not user:
         return jsonify({"message": "User not found"}), 404
 
@@ -93,8 +105,10 @@ def update_me():
     data = request.get_json()
 
     update_data = {}
+
     if "name" in data:
         update_data["name"] = data["name"]
+
     if "password" in data:
         update_data["password"] = generate_password_hash(data["password"])
 
