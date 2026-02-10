@@ -9,17 +9,19 @@ from flask import (
 )
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+from bson import ObjectId
 
 from backend.config import Config
 from backend.extensions import bcrypt, jwt
 
-# Blueprints
+# ---------- BLUEPRINTS ----------
 from backend.routes.auth import auth_bp
 from backend.routes.products import products_bp
 from backend.routes.cart import cart_bp
 from backend.routes.orders import orders_bp
 from backend.routes.ai import ai_bp
 from backend.routes.accessories import api_accessories, accessories_site
+
 
 # ================== APP FACTORY ==================
 def create_app():
@@ -42,17 +44,17 @@ def create_app():
     app.secret_key = app.config["SECRET_KEY"]
 
     # ---------- CORS ----------
-    CORS(app)
+    CORS(app, supports_credentials=True)
 
     # ---------- MONGODB ----------
     mongo = PyMongo(app)
-    app.mongo = mongo  # accessible in routes via current_app.mongo
+    app.mongo = mongo  # available as current_app.mongo
 
     # ---------- EXTENSIONS ----------
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    # ---------- BLUEPRINTS ----------
+    # ---------- REGISTER BLUEPRINTS ----------
     app.register_blueprint(auth_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(cart_bp)
@@ -88,8 +90,8 @@ def create_app():
     # ---------- SITE PAGES ----------
     @app.route("/marketplace")
     def marketplace():
-        fishes = list(app.mongo.db.products.find())
-        return render_template("marketplace.html", fishes=fishes)
+        products = list(app.mongo.db.products.find())
+        return render_template("marketplace.html", fishes=products)
 
     @app.route("/ai-fish")
     def ai_fish():
@@ -105,7 +107,7 @@ def create_app():
 
     @app.route("/auth")
     def auth():
-        if "user_id" not in session:
+        if "user_id" in session:
             return redirect("/profile")
         return render_template("auth.html")
 
@@ -119,10 +121,17 @@ def create_app():
 
     @app.route("/product/<pid>")
     def product_page(pid):
-        product = app.mongo.db.products.find_one({"_id": pid}) or \
-                  app.mongo.db.products.find_one({"id": int(pid)})
+        product = None
+
+        if ObjectId.is_valid(pid):
+            product = app.mongo.db.products.find_one({"_id": ObjectId(pid)})
+
+        if not product:
+            product = app.mongo.db.products.find_one({"id": int(pid)}) if pid.isdigit() else None
+
         if not product:
             return "Product not found", 404
+
         return render_template("product.html", p=product)
 
     @app.route("/accessories")
