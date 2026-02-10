@@ -1,61 +1,53 @@
-# from datetime import datetime
-# # from main import db
-# from extensions import db
-
-# class Product(db.Model):
-#     __tablename__ = "products"
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(100), nullable=False)
-#     price = db.Column(db.Float, nullable=False)
-#     stock = db.Column(db.Integer, nullable=False)
-#     description = db.Column(db.Text)
-#     image = db.Column(db.String(255))
-#     category = db.Column(db.String(50))
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-#     seller_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-
-# from extensions import db
-
-# class Product(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(150))
-#     price = db.Column(db.Float)
-
-# from extensions import db
-
-# class Product(db.Model):
-#     __tablename__ = "products"
-
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(150))
-#     price = db.Column(db.Float)
-#     description = db.Column(db.Text)
-#     image = db.Column(db.String(255))
-#     rating = db.Column(db.Float, default=4.5)
-
-from extensions import db
-
-class Product(db.Model):
-    __tablename__ = "products"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200))
-    price = db.Column(db.Integer)
-    description = db.Column(db.Text)
-    image = db.Column(db.String(255))
-    rating = db.Column(db.Float)
-    category = db.Column(db.String(100))   # <-- THIS WAS MISSING
-
-def to_dict(self):
-    return {
-        "id": self.id,
-        "name": self.name,
-        "price": self.price,
-        "stock": self.stock,
-        "description": self.description,
-        "category": self.category
-    }
+from bson.objectid import ObjectId
 
 
+class Product:
+    """
+    MongoDB Product helper class
+    (NOT a SQLAlchemy model)
+    """
+
+    def __init__(
+        self,
+        name,
+        price,
+        description=None,
+        image=None,
+        rating=4.5,
+        category=None,
+        stock=0
+    ):
+        self.name = name
+        self.price = price
+        self.description = description
+        self.image = image
+        self.rating = rating
+        self.category = category
+        self.stock = stock
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "price": self.price,
+            "description": self.description,
+            "image": self.image,
+            "rating": self.rating,
+            "category": self.category,
+            "stock": self.stock
+        }
+
+    @staticmethod
+    def serialize(product):
+        """
+        Converts MongoDB document → JSON-safe dict
+        """
+        return {
+            "id": str(product["_id"]),
+            "name": product.get("name"),
+            "price": product.get("price"),
+            "description": product.get("description"),
+            "image": product.get("image"),
+            "rating": product.get("rating", 4.5),
+            "category": product.get("category"),
+            "stock": product.get("stock", 0)
+        }
