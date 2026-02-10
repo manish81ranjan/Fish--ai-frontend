@@ -4,8 +4,8 @@ from bson import ObjectId
 from flask import Blueprint, request, jsonify, render_template
 from flask_jwt_extended import jwt_required
 
-from backend.extensions import mongo
 # from backend.extensions import mongo
+from backend.extensions import mongo
 
 
 
@@ -182,5 +182,6 @@ def add_review():
     mongo.db.reviews.insert_one(review)
 
     return jsonify({"message": "Review added"})
+
 
 
