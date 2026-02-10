@@ -1,37 +1,4 @@
-# # # from .user import User
-# # # from .product import Product
-# # # from .cart import Cart
-# # # from .order import Order
 
-# # # from flask_sqlalchemy import SQLAlchemy
-
-# # # db = SQLAlchemy()
-
-# # # from .user import User
-# # # from .product import Product
-# # # from .cart import Cart
-# # # from .order import Order
-# # # from .payment import Payment
-
-# # from .user import User
-# # from .product import Product
-# # from .cart import Cart
-# # from .order import Order
-# # from .payment import Payment
-
-# from .user import User
-# from .product import Product
-# from .cart import Cart
-# from .order import Order
-# # from .payment import Payment
-
-# from extensions import db
-
-# from .user import User
-# from .product import Product
-# from .cart import Cart
-# from .order import Order
-# from .payment import Payment
 
 # from extensions import db
 # from .product import Product
@@ -40,13 +7,14 @@
 # from .order import Order
 # from .accessory import Accessory
 # from .accessory_review import AccessoryReview
+from ..extensions import mongo
 
-from ..extensions import db
+# Example: collections
+users_collection = mongo.db.users
+products_collection = mongo.db.products
+carts_collection = mongo.db.carts
+orders_collection = mongo.db.orders
+accessories_collection = mongo.db.accessories
+accessory_reviews_collection = mongo.db.accessory_reviews
 
-from .user import User
-from .product import Product
-from .cart import Cart
-from .order import Order
-from .accessory import Accessory
-from .accessory_review import AccessoryReview
 
