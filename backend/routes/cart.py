@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from bson import ObjectId
 
-from extensions import db
-from models.cart import Cart
-from models.product import Product
+from backend.extensions import mongo
+from backend.models.cart import Cart
 
 cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 
@@ -15,7 +15,7 @@ cart_bp = Blueprint("cart", __name__, url_prefix="/api/cart")
 @jwt_required()
 def add_to_cart():
     user_id = get_jwt_identity()
-    data = request.get_json()
+    data = request.get_json() or {}
 
     product_id = data.get("product_id")
     quantity = int(data.get("quantity", 1))
@@ -23,26 +23,31 @@ def add_to_cart():
     if not product_id:
         return jsonify({"message": "Product ID required"}), 400
 
-    product = Product.query.get(product_id)
+    # Check product exists
+    product = mongo.db.products.find_one(
+        {"_id": ObjectId(product_id)}
+    )
     if not product:
         return jsonify({"message": "Product not found"}), 404
 
-    cart_item = Cart.query.filter_by(
-        user_id=user_id,
-        product_id=product_id
-    ).first()
+    # Check if already in cart
+    existing_item = mongo.db.cart.find_one({
+        "user_id": ObjectId(user_id),
+        "product_id": ObjectId(product_id)
+    })
 
-    if cart_item:
-        cart_item.quantity += quantity
+    if existing_item:
+        mongo.db.cart.update_one(
+            {"_id": existing_item["_id"]},
+            {"$inc": {"quantity": quantity}}
+        )
     else:
         cart_item = Cart(
             user_id=user_id,
             product_id=product_id,
             quantity=quantity
         )
-        db.session.add(cart_item)
-
-    db.session.commit()
+        mongo.db.cart.insert_one(cart_item.to_dict())
 
     return jsonify({"message": "Product added to cart"}), 200
 
@@ -55,27 +60,31 @@ def add_to_cart():
 def get_cart():
     user_id = get_jwt_identity()
 
-    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    cart_items = mongo.db.cart.find({
+        "user_id": ObjectId(user_id)
+    })
 
     result = []
     total_price = 0
 
     for item in cart_items:
-        product = Product.query.get(item.product_id)
+        product = mongo.db.products.find_one(
+            {"_id": item["product_id"]}
+        )
 
         if not product:
             continue
 
-        item_total = product.price * item.quantity
+        item_total = product["price"] * item["quantity"]
         total_price += item_total
 
         result.append({
-            "cart_id": item.id,
-            "product_id": product.id,
-            "name": product.name,
-            "price": product.price,
-            "quantity": item.quantity,
-            "image": product.image,
+            "cart_id": str(item["_id"]),
+            "product_id": str(product["_id"]),
+            "name": product["name"],
+            "price": product["price"],
+            "quantity": item["quantity"],
+            "image": product.get("image"),
             "item_total": item_total
         })
 
@@ -88,21 +97,18 @@ def get_cart():
 # =========================
 # REMOVE ITEM FROM CART
 # =========================
-@cart_bp.route("/remove/<int:cart_id>", methods=["DELETE"])
+@cart_bp.route("/remove/<cart_id>", methods=["DELETE"])
 @jwt_required()
 def remove_item(cart_id):
     user_id = get_jwt_identity()
 
-    cart_item = Cart.query.filter_by(
-        id=cart_id,
-        user_id=user_id
-    ).first()
+    result = mongo.db.cart.delete_one({
+        "_id": ObjectId(cart_id),
+        "user_id": ObjectId(user_id)
+    })
 
-    if not cart_item:
+    if result.deleted_count == 0:
         return jsonify({"message": "Cart item not found"}), 404
-
-    db.session.delete(cart_item)
-    db.session.commit()
 
     return jsonify({"message": "Item removed from cart"}), 200
 
@@ -115,7 +121,8 @@ def remove_item(cart_id):
 def clear_cart():
     user_id = get_jwt_identity()
 
-    Cart.query.filter_by(user_id=user_id).delete()
-    db.session.commit()
+    mongo.db.cart.delete_many({
+        "user_id": ObjectId(user_id)
+    })
 
     return jsonify({"message": "Cart cleared"}), 200
