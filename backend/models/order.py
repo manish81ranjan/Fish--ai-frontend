@@ -1,21 +1,48 @@
-# from datetime import datetime
-# # from main import db
-# from extensions import db
+from datetime import datetime
 
 
-# class Order(db.Model):
-#     __tablename__ = "orders"
+class Order:
+    """
+    MongoDB Order helper class
+    One document per order
+    """
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-#     total_amount = db.Column(db.Float, nullable=False)
-#     status = db.Column(db.String(50), default="pending")
-#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def __init__(
+        self,
+        user_id,
+        items,
+        total_amount,
+        status="pending",
+        created_at=None
+    ):
+        self.user_id = user_id              # string (ObjectId)
+        self.items = items                  # list of products
+        self.total_amount = total_amount
+        self.status = status
+        self.created_at = created_at or datetime.utcnow()
 
+    def to_dict(self):
+        """
+        Used while inserting into MongoDB
+        """
+        return {
+            "user_id": self.user_id,
+            "items": self.items,
+            "total_amount": self.total_amount,
+            "status": self.status,
+            "created_at": self.created_at
+        }
 
-from extensions import db
-
-class Order(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    total = db.Column(db.Float)
+    @staticmethod
+    def serialize(order):
+        """
+        Used while sending order data to frontend
+        """
+        return {
+            "id": str(order["_id"]),
+            "user_id": order.get("user_id"),
+            "items": order.get("items", []),
+            "total_amount": order.get("total_amount"),
+            "status": order.get("status"),
+            "created_at": order.get("created_at")
+        }
