@@ -7,14 +7,14 @@ from flask import (
     flash,
     current_app
 )
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_bcrypt import Bcrypt
 from bson.objectid import ObjectId
 
 auth_bp = Blueprint("auth", __name__)
+bcrypt = Bcrypt()
 
 
-# ===================== ROUTES =====================
-
+# ===================== HOME =====================
 @auth_bp.route("/")
 def index():
     if "user_id" not in session:
@@ -22,9 +22,9 @@ def index():
     return render_template("index.html")
 
 
+# ===================== PROFILE / LOGIN PAGE =====================
 @auth_bp.route("/profile")
 def profile_page():
-    session.clear()
     return render_template("profile.html")
 
 
@@ -42,12 +42,11 @@ def signup():
     mongo = current_app.mongo
     users = mongo.db.users
 
-    # Check if email already exists
     if users.find_one({"email": email}):
         flash("Email already exists", "error")
         return redirect("/profile")
 
-    hashed_password = generate_password_hash(password)
+    hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
 
     users.insert_one({
         "name": name,
@@ -55,7 +54,7 @@ def signup():
         "password": hashed_password
     })
 
-    flash("Signup successful", "success")
+    flash("Signup successful. Please login.", "success")
     return redirect("/profile")
 
 
@@ -68,27 +67,27 @@ def login():
     mongo = current_app.mongo
     user = mongo.db.users.find_one({"email": email})
 
-    if user and check_password_hash(user["password"], password):
+    if user and bcrypt.check_password_hash(user["password"], password):
         session["user_id"] = str(user["_id"])
         session["user_name"] = user["name"]
-        return redirect("/")
+        return redirect("/auth")
 
     flash("Invalid email or password", "error")
     return redirect("/profile")
 
 
-# ===================== AUTH PAGE =====================
+# ===================== AUTH DASHBOARD =====================
 @auth_bp.route("/auth")
-def auth():
+def auth_dashboard():
     if "user_id" not in session:
         return redirect("/profile")
 
     mongo = current_app.mongo
 
     try:
-        user = mongo.db.users.find_one(
-            {"_id": ObjectId(session["user_id"])}
-        )
+        user = mongo.db.users.find_one({
+            "_id": ObjectId(session["user_id"])
+        })
     except Exception:
         session.clear()
         return redirect("/profile")
@@ -99,6 +98,14 @@ def auth():
 
     return render_template(
         "auth.html",
-        name=user["name"],
-        email=user["email"]
+        name=user.get("name"),
+        email=user.get("email")
     )
+
+
+# ===================== LOGOUT =====================
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully", "success")
+    return redirect("/profile")
