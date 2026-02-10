@@ -1,20 +1,44 @@
-# # from main import db
-# from extensions import db
+from datetime import datetime
 
 
-# class Cart(db.Model):
-#     __tablename__ = "cart"
+class Cart:
+    """
+    MongoDB Cart helper class
+    One document per product per user
+    """
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-#     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
-#     quantity = db.Column(db.Integer, default=1)
+    def __init__(
+        self,
+        user_id,
+        product_id,
+        quantity=1,
+        created_at=None
+    ):
+        self.user_id = user_id              # string (ObjectId)
+        self.product_id = product_id        # string (ObjectId)
+        self.quantity = quantity
+        self.created_at = created_at or datetime.utcnow()
 
-from extensions import db
+    def to_dict(self):
+        """
+        Used while inserting into MongoDB
+        """
+        return {
+            "user_id": self.user_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "created_at": self.created_at
+        }
 
-class Cart(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
-    product_id = db.Column(db.Integer)
-    quantity = db.Column(db.Integer, default=1)
-
+    @staticmethod
+    def serialize(cart):
+        """
+        Used while sending data to frontend
+        """
+        return {
+            "id": str(cart["_id"]),
+            "user_id": cart.get("user_id"),
+            "product_id": cart.get("product_id"),
+            "quantity": cart.get("quantity"),
+            "created_at": cart.get("created_at")
+        }
