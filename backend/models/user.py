@@ -1,9 +1,11 @@
-from backend.extensions import db
+from extensions import mongo
 
-class User(db.Model):
-    __tablename__ = "users"
+def create_user(name, email, password):
+    return mongo.db.users.insert_one({
+        "name": name,
+        "email": email,
+        "password": password
+    })
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+def get_user_by_email(email):
+    return mongo.db.users.find_one({"email": email})
