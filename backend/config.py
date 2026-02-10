@@ -45,11 +45,12 @@ import os
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwt-secret")
 
-    # ✅ USE DIRECT MONGO URI (RENDER SAFE)
+    # ✅ Only ONE Mongo variable
     MONGO_URI = os.getenv("MONGO_URI")
 
     if not MONGO_URI:
-        raise RuntimeError("❌ MONGO_URI is not set")
+        raise RuntimeError("❌ MONGO_URI not set")
 
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwt-secret")
+
