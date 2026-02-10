@@ -12,7 +12,8 @@ from flask_pymongo import PyMongo
 from bson import ObjectId
 
 from backend.config import Config
-from backend.extensions import bcrypt, jwt
+from backend.extensions import mongo, bcrypt, jwt
+
 
 # ---------- BLUEPRINTS ----------
 from backend.routes.auth import auth_bp
@@ -97,5 +98,6 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
