@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, render_template
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 
-from extensions import mongo
+from backend.extensions import mongo  # ✅ FIXED IMPORT
 
 
 # =========================
@@ -105,8 +105,8 @@ def update_product(id):
         {"_id": ObjectId(id)},
         {"$set": {
             "name": data.get("name", product["name"]),
-            "price": data.get("price", product["price"]),
-            "stock": data.get("stock", product["stock"]),
+            "price": int(data.get("price", product["price"])),
+            "stock": int(data.get("stock", product["stock"])),
             "description": data.get("description", product.get("description")),
             "category": data.get("category", product.get("category"))
         }}
