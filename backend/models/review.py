@@ -1,25 +1,60 @@
-from extensions import db
 from datetime import datetime
 
 
-class Review(db.Model):
-    __tablename__ = "reviews"
-    __table_args__ = {"extend_existing": True}
+class Review:
+    """
+    MongoDB Review helper class
+    Used for product reviews
+    """
 
-    id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    comment = db.Column(db.Text, nullable=False)
+    def __init__(
+        self,
+        product_id,
+        name,
+        rating,
+        comment,
+        images=None,
+        video=None,
+        likes=0,
+        created_at=None
+    ):
+        self.product_id = product_id        # string (ObjectId)
+        self.name = name
+        self.rating = rating
+        self.comment = comment
+        self.images = images or []          # list of image URLs
+        self.video = video
+        self.likes = likes
+        self.created_at = created_at or datetime.utcnow()
 
-    images = db.Column(db.Text)
-    video = db.Column(db.String(255))
-    likes = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    def to_dict(self):
+        """
+        Used when inserting into MongoDB
+        """
+        return {
+            "product_id": self.product_id,
+            "name": self.name,
+            "rating": self.rating,
+            "comment": self.comment,
+            "images": self.images,
+            "video": self.video,
+            "likes": self.likes,
+            "created_at": self.created_at
+        }
 
-    # def __init__(self, product_id, name, rating, comment, image=None):
-    #     self.product_id = product_id
-    #     self.name = name
-    #     self.rating = rating
-    #     self.comment = comment
-    #     self.image = image
+    @staticmethod
+    def serialize(review):
+        """
+        Used when sending review data to frontend
+        """
+        return {
+            "id": str(review["_id"]),
+            "product_id": review.get("product_id"),
+            "name": review.get("name"),
+            "rating": review.get("rating"),
+            "comment": review.get("comment"),
+            "images": review.get("images", []),
+            "video": review.get("video"),
+            "likes": review.get("likes", 0),
+            "created_at": review.get("created_at")
+        }
